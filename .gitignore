@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+# re-downloadable or regenerable, too large for GitHub
+data/erase/dl/
+data/erase/pairs/
+data/erase/erasenet_v1.pt
+data/erase/erasenet_v2.pt
+*.log

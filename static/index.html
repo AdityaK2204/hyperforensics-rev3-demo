@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HyperForensics Rev 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDF0F3; --panel:#FFFFFF; --ink:#13202C; --ink2:#48586A; --ink3:#7C8A99; --rule:#D3DAE2; --rule2:#E6EAEF;
+  --fake:#B8322A; --real:#1B7A58; --unsure:#8F6B0E; --fake-bg:#FBEDEB; --real-bg:#E8F4EF; --unsure-bg:#FAF3DF;
+  --compression:#D5741A; --sensor:#2B6CB3; --synthesis:#7650C4; --scene:#1B8686; --temporal:#2F8A55; --encapsulation:#596573;
+  --font:"Archivo","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{font-size:16px}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-stretch:100%;line-height:1.45;
+  background-image:radial-gradient(circle at 1px 1px,#D9DFE6 1px,transparent 0);background-size:22px 22px}
+button,input{font:inherit;color:inherit}
+h1,h2,h3,p{margin:0}
+.num{font-variant-numeric:tabular-nums;font-stretch:80%}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* header */
+header.top{background:var(--ink);color:#fff}
+header.top .wrap{display:flex;align-items:center;gap:28px;height:58px}
+.brand{font-weight:800;font-size:1.15rem;font-stretch:112%;letter-spacing:-.01em}
+.brand span{font-weight:400;font-stretch:88%;color:#A9B8C7;margin-left:10px;font-size:.95rem}
+nav{display:flex;gap:2px;margin-left:auto}
+nav button{background:none;border:0;color:#A9B8C7;padding:8px 14px;border-radius:4px;cursor:pointer;font-weight:500}
+nav button[aria-selected="true"]{color:#fff;background:#263746}
+nav button:focus-visible,.btn:focus-visible,.gal button:focus-visible,.chip:focus-visible{outline:2px solid #F0A040;outline-offset:2px}
+.build{font-size:.8rem;color:#8FA0B1;font-stretch:85%}
+
+section.view{display:none;padding:26px 0 70px}
+section.view.on{display:block}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px}
+.pad{padding:20px 22px}
+h2{font-size:1.32rem;font-weight:700;font-stretch:108%;letter-spacing:-.01em}
+h3{font-size:.98rem;font-weight:650}
+.lead{color:var(--ink2);max-width:74ch;margin-top:4px}
+.small{font-size:.84rem;color:var(--ink2)}
+.tiny{font-size:.76rem;color:var(--ink3)}
+.step{display:flex;gap:14px;align-items:baseline;margin:34px 0 12px}
+.step .n{font-weight:800;font-stretch:70%;font-size:2.1rem;line-height:1;color:var(--ink);min-width:26px}
+.step .n.a{color:var(--compression)} .step .n.b{color:var(--sensor)} .step .n.f{color:var(--synthesis)}
+
+/* intake */
+.intake{display:block}
+.drop{border:2px dashed #AEBAC6;border-radius:6px;background:#F8FAFB;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:34px 22px;gap:10px;min-height:200px;transition:border-color .12s,background .12s}
+.drop .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+dialog.demo{border:0;border-radius:8px;padding:0;width:min(1000px,94vw);max-height:88vh;box-shadow:0 20px 60px rgba(19,32,44,.35)}
+dialog.demo::backdrop{background:rgba(19,32,44,.55)}
+dialog.demo .head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--rule)}
+dialog.demo .body{padding:16px 20px 20px;overflow:auto;max-height:calc(88vh - 70px)}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.dgrid button{background:#fff;border:1px solid var(--rule);border-radius:5px;padding:0;cursor:pointer;text-align:left;overflow:hidden}
+.dgrid button:hover,.dgrid button:focus-visible{border-color:var(--ink);outline:none;box-shadow:0 0 0 2px var(--ink)}
+.dgrid img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#DDE3E9}
+.dgrid .cap{padding:6px 8px 8px;font-size:.8rem;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.tag{border-radius:3px;padding:1px 6px;font-size:.72rem;font-weight:600;white-space:nowrap}
+.tag.original{background:var(--real-bg);color:var(--real)} .tag.edited{background:var(--fake-bg);color:var(--fake)}
+.drop.over{border-color:var(--compression);background:#FFF6EA}
+.drop strong{font-size:1.12rem;font-stretch:106%}
+.btn{background:var(--ink);color:#fff;border:0;border-radius:4px;padding:9px 16px;font-weight:600;cursor:pointer}
+.btn:hover{background:#243545}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--rule)}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.gal button{background:#fff;border:1px solid var(--rule);border-radius:5px;padding:0;cursor:pointer;text-align:left;overflow:hidden}
+.gal button:hover{border-color:var(--ink)}
+.gal button.sel{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.gal img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#DDE3E9}
+.gal .cap{padding:6px 8px 8px;font-size:.78rem;line-height:1.25}
+.gal .cap b{display:block;font-stretch:88%}
+.gal .cap i{font-style:normal;color:var(--ink3)}
+
+.progress{display:none;margin-top:16px;padding:14px 18px}
+.progress.on{display:block}
+.bar{height:6px;background:var(--rule2);border-radius:3px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;width:0;background:var(--ink);transition:width .25s}
+.err{display:none;margin-top:16px;padding:14px 18px;border-left:4px solid var(--fake);background:var(--fake-bg)}
+.err.on{display:block}
+
+/* verdict */
+#result{display:none}
+#result.on{display:block}
+.verdict{display:grid;grid-template-columns:minmax(280px,440px) 1fr;gap:0;margin-top:22px;overflow:hidden}
+.stage{position:relative;background:#0E1720;display:flex;align-items:center;justify-content:center;min-height:280px}
+.stage img,.stage canvas{display:block;max-width:100%;max-height:460px}
+.stage canvas{position:absolute;inset:0;margin:auto;pointer-events:none}
+.layers{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:#17232F}
+.chip{border:1px solid #3A4A5A;background:none;color:#C5D0DB;border-radius:999px;padding:3px 11px;font-size:.78rem;cursor:pointer}
+.chip.on{background:#fff;color:var(--ink);border-color:#fff}
+.vbody{padding:24px 28px}
+.vtitle{font-size:2.5rem;line-height:1.04;font-weight:800;font-stretch:112%;letter-spacing:-.025em}
+.vtitle.fake{color:var(--fake)} .vtitle.real{color:var(--real)} .vtitle.inconclusive{color:var(--unsure)}
+.vsub{margin-top:6px;color:var(--ink2)}
+.meter{margin:30px 0 6px;position:relative;height:54px}
+.meter .track{position:absolute;left:0;right:0;top:20px;height:14px;display:flex;border-radius:2px;overflow:hidden}
+.meter .track i{display:block;height:100%}
+.meter .needle{position:absolute;top:8px;width:3px;height:38px;background:var(--ink);transform:translateX(-1.5px)}
+.meter .val{position:absolute;top:-18px;font-weight:800;font-stretch:75%;font-size:1.25rem;transform:translateX(-50%);white-space:nowrap}
+.meter .ticks{position:absolute;left:0;right:0;top:38px;font-size:.72rem;color:var(--ink3)}
+.meter .ticks span{position:absolute;transform:translateX(-50%)}
+.reasons{margin:14px 0 0;padding:0;list-style:none}
+.reasons li{padding:5px 0 5px 16px;position:relative;max-width:70ch}
+.reasons li::before{content:"";position:absolute;left:0;top:13px;width:7px;height:2px;background:var(--ink3)}
+.decisive{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.dc{display:flex;align-items:center;gap:8px;border:1px solid var(--rule);border-radius:4px;padding:5px 10px;font-size:.86rem}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.erase{margin-top:14px;padding:10px 12px;border-radius:4px;border:1px solid var(--rule);font-size:.9rem;max-width:72ch}
+.erase b{font-weight:700;margin-right:6px} .erase.found{background:var(--fake-bg);border-color:#EBC6C2} .erase.clear{background:var(--real-bg);border-color:#BFDDD0}
+.erase.weak{background:#F4F6F8}
+.truth{margin-top:16px;padding:10px 12px;border-radius:4px;font-size:.88rem;border:1px solid var(--rule)}
+.truth.ok{background:var(--real-bg);border-color:#BFDDD0} .truth.no{background:var(--fake-bg);border-color:#EBC6C2}
+.facts{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:14px;font-size:.82rem;color:var(--ink2)}
+.facts b{color:var(--ink);font-weight:600}
+
+/* cue table */
+table.cues{width:100%;border-collapse:collapse}
+table.cues th{font-size:.78rem;font-weight:600;color:var(--ink3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule)}
+table.cues td{padding:10px;border-bottom:1px solid var(--rule2);vertical-align:middle;font-size:.9rem}
+table.cues tr:last-child td{border-bottom:0}
+table.cues tr.masked td{color:var(--ink3);background:#F7F9FA}
+.cname{display:flex;align-items:center;gap:9px}
+.cname b{font-stretch:80%;font-weight:800;font-size:1rem;min-width:24px}
+.cname small{display:block;color:var(--ink3);font-size:.76rem}
+.mbar{position:relative;width:170px;height:22px}
+.mbar .axis{position:absolute;left:0;right:0;top:10px;height:2px;background:var(--rule)}
+.mbar .tau{position:absolute;left:40%;top:1px;width:2px;height:20px;background:var(--ink)}
+.mbar .fill{position:absolute;top:6px;height:10px;border-radius:1px}
+.tbar{width:74px;height:8px;background:var(--rule2);border-radius:2px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px}
+.tbar i{display:block;height:100%;background:var(--ink)}
+.pill{display:inline-block;border-radius:3px;padding:1px 7px;font-size:.78rem;font-weight:600}
+.pill.hit{background:var(--fake-bg);color:var(--fake)} .pill.miss{background:var(--rule2);color:var(--ink2)}
+.mapbtn{border:1px solid var(--rule);background:#0E1720;border-radius:3px;padding:0;cursor:pointer;width:44px;height:44px;display:block}
+.mapbtn canvas{width:42px;height:42px;display:block}
+.detail{color:var(--ink2);font-size:.8rem;max-width:36ch}
+
+/* ladder */
+.ladder{display:grid;grid-template-columns:repeat(9,1fr);gap:6px}
+.rung{border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#fff}
+.rung.here{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.rung img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#DDE3E9}
+.rung div{padding:5px 6px 6px;font-size:.72rem;line-height:1.25}
+.rung b{font-size:.95rem;font-stretch:80%;font-weight:800}
+.rung .lab{display:inline-block;margin-left:4px;width:8px;height:8px;border-radius:50%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.minis{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:12px}
+.mini{border:1px solid var(--rule2);border-radius:4px;padding:10px 12px}
+.mini h4{margin:0;font-size:.86rem;font-weight:650;display:flex;align-items:center;gap:7px}
+.mini p{font-size:.76rem;color:var(--ink2);margin-top:4px}
+svg{display:block;max-width:100%}
+svg text{font-family:var(--font);fill:var(--ink2)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.8rem;color:var(--ink2);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:14px;height:3px;display:inline-block}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:4px 12px;font-size:.82rem;cursor:pointer}
+.seg button.on{background:var(--ink);color:#fff}
+.hyp{border-left:4px solid var(--ink3);padding:4px 0 4px 14px;margin-top:14px}
+.hyp.yes{border-color:var(--real)} .hyp.no{border-color:var(--unsure)}
+.hyp b{font-stretch:80%;font-weight:800;margin-right:6px}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:4px 16px;font-size:.88rem}
+.kv dt{color:var(--ink3)} .kv dd{margin:0}
+table.plain{border-collapse:collapse;font-size:.84rem;width:100%}
+table.plain th,table.plain td{text-align:left;padding:5px 10px 5px 0;border-bottom:1px solid var(--rule2)}
+table.plain th{color:var(--ink3);font-weight:600;font-size:.78rem}
+.note{border:1px solid var(--rule);border-left:4px solid var(--compression);background:#FFF9F1;padding:12px 14px;border-radius:4px;font-size:.88rem;max-width:90ch}
+@media (max-width:900px){
+  .intake,.verdict,.grid2,.grid3{grid-template-columns:1fr}
+  .ladder{grid-template-columns:repeat(3,1fr)}
+  .vtitle{font-size:1.9rem}
+  .scroll{overflow-x:auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand">HyperForensics<span>Rev 3 demo, images</span></div>
+  <nav role="tablist">
+    <button role="tab" aria-selected="true" data-view="analyse">Analyse a file</button>
+    <button role="tab" aria-selected="false" data-view="measure">Measurements</button>
+    <button role="tab" aria-selected="false" data-view="system">System</button>
+  </nav>
+  <div class="build" id="build"></div>
+</div></header>
+
+<section class="view on" id="view-analyse"><div class="wrap">
+  <div class="intake">
+    <div class="drop" id="drop">
+      <strong>Check an image</strong>
+      <span class="small">Drop a JPEG, PNG or WebP here. The file is analysed on this machine and is not stored.</span>
+      <div class="actions">
+        <button class="btn" id="pick">Choose a file</button>
+        <button class="btn ghost" id="demobtn">Open demo images</button>
+      </div>
+      <input type="file" id="file" accept="image/*" hidden>
+    </div>
+  </div>
+  <dialog class="demo" id="demo" aria-labelledby="demotitle">
+    <div class="head"><div><h3 id="demotitle">Demo images</h3><p class="tiny" id="demofolder"></p></div>
+      <button class="btn ghost" id="democlose">Close</button></div>
+    <div class="body"><div class="dgrid" id="dgrid"></div></div>
+  </dialog>
+  <div class="panel progress" id="progress"><span id="pmsg">Working</span><div class="bar"><i id="pbar"></i></div></div>
+  <div class="err" id="err"></div>
+
+  <div id="result">
+    <div class="panel verdict">
+      <div>
+        <div class="stage"><img id="pv" alt="Analysed region of the file"><canvas id="ov"></canvas></div>
+        <div class="layers" id="layers"></div>
+      </div>
+      <div class="vbody">
+        <div class="vtitle" id="vtitle"></div>
+        <div class="vsub" id="vsub"></div>
+        <div class="meter" id="meter"></div>
+        <div id="erasure"></div>
+        <ul class="reasons" id="reasons"></ul>
+        <div class="decisive" id="decisive"></div>
+        <div id="truth"></div>
+        <div class="facts" id="facts"></div>
+      </div>
+    </div>
+
+    <div class="step"><span class="n b">1</span><div><h2>Evidence on the file as received</h2>
+      <p class="lead">Eight hand-built cues from six physical origins, plus one learned erasure detector (C9). Each score is compared with a threshold that was fixed on undamaged files and never moved.</p></div></div>
+    <div class="panel scroll"><table class="cues" id="cues"></table></div>
+
+    <div class="step"><span class="n a">2</span><div><h2>Lifecycle: we damage the file ourselves</h2>
+      <p class="lead">The file is taken down the nine-rung ladder and through every ordering of four everyday events. All cues are read again at each step, which shows how long this file's evidence lasts and which cues move together.</p></div></div>
+    <div class="panel pad">
+      <div class="ladder" id="ladder"></div>
+      <div id="ladderchart" style="margin-top:6px"></div>
+      <div class="legend"><span><i style="background:var(--ink);height:3px"></i>fused probability of manipulation on each rung</span>
+        <span><i style="background:var(--fake-bg);height:10px;border:1px solid #EBC6C2"></i>manipulated zone</span>
+        <span><i style="background:var(--real-bg);height:10px;border:1px solid #BFDDD0"></i>no-evidence zone</span></div>
+    </div>
+    <div class="panel pad" style="margin-top:16px">
+      <h3>How each cue's score moves down the ladder</h3>
+      <p class="small">Zero is the cue's frozen threshold. Filled points are above it.</p>
+      <div class="minis" id="minis" style="margin-top:12px"></div>
+    </div>
+    <div class="grid2" style="margin-top:16px">
+      <div class="panel pad">
+        <h3 id="histtitle">File histories</h3>
+        <p class="small">Each column is one possible history of the file. Coloured cells are cues still above threshold after it.</p>
+        <div id="hist" class="scroll" style="margin-top:10px"></div>
+      </div>
+      <div class="panel pad">
+        <h3>Which cues move together</h3>
+        <p class="small" id="reltext"></p>
+        <div class="grid2" style="margin-top:10px;gap:10px"><div id="hm1"></div><div id="hm2"></div></div>
+      </div>
+    </div>
+
+    <div class="step"><span class="n f">3</span><div><h2>Fusion: the two pipelines meet</h2>
+      <p class="lead">The lifecycle run says how damaged the file is and whether each cue's reading survives a re-save. That sets how far each cue is trusted and which cues are linked. The graph network then reads the evidence through those links.</p></div></div>
+    <div class="grid3">
+      <div class="panel pad"><h3>How damaged is this file?</h3><p class="small" id="dmgtext"></p><div id="dmg" style="margin-top:8px"></div><dl class="kv" id="dmgkv" style="margin-top:10px"></dl></div>
+      <div class="panel pad"><h3>Cue graph used for this file</h3><p class="small">Node size is trust. A ring means the cue fired. Lines join cues measured to fail together at this level of damage.</p><div id="graph"></div></div>
+      <div class="panel pad"><h3>Three ways to combine the same evidence</h3><p class="small">Only the links differ. The first is the reported result.</p><div id="arms" style="margin-top:12px"></div><p class="tiny" id="armnote" style="margin-top:10px"></p></div>
+    </div>
+    <p class="tiny" id="timing" style="margin-top:14px"></p>
+  </div>
+</div></section>
+
+<section class="view" id="view-measure"><div class="wrap">
+  <h2>What was measured on the controlled set</h2>
+  <p class="lead" id="mlead"></p>
+  <div class="note" style="margin-top:14px" id="mnote"></div>
+  <div class="grid2" style="margin-top:18px">
+    <div class="panel pad"><h3>Survival: how long each cue keeps working</h3><p class="small">AUC of each cue alone on the test split, rung by rung. R* is the first rung below the floor.</p><div id="surv" style="margin-top:8px"></div><div class="legend" id="survleg"></div></div>
+    <div class="panel pad"><h3>Fusion per rung</h3><p class="small">AUC of the three arms on the test split, mean of five seeds, with the best single cue and a pixels-only run for scale.</p><div id="fus" style="margin-top:8px"></div><div class="legend" id="fusleg"></div></div>
+  </div>
+  <div class="panel pad" style="margin-top:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div><h3>Dependence trajectory</h3><p class="small">One matrix per rung over cue errors, thresholds frozen at R0. Warm cells are cues that fail on the same files.</p></div>
+      <div class="seg" id="depseg"><button data-m="rho" class="on">Correlation</button><button data-m="Q">Q-statistic</button><button data-m="Dis">Disagreement</button></div>
+    </div>
+    <div id="dep" class="scroll" style="margin-top:12px"></div>
+  </div>
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel pad"><h3>Fusion gap and calibration</h3><p class="small">Gap is our arm minus the other, with one standard deviation over seeds. Calibration error is per rung, not pooled.</p><div id="gap" style="margin-top:8px"></div><div class="legend" id="gapleg"></div><div id="ece" style="margin-top:14px"></div><div class="legend" id="eceleg"></div></div>
+    <div class="panel pad"><h3>The three hypotheses, as measured here</h3><div id="hyps"></div>
+      <h3 style="margin-top:22px">Negative results reported regardless</h3><div id="negs" style="margin-top:6px"></div></div>
+  </div>
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel pad"><h3>Damage estimator</h3><p class="small" id="hubtext"></p><div id="hub" style="margin-top:8px"></div></div>
+    <div class="panel pad"><h3>Trust per cue and rung</h3><p class="small">How often a cue's decision is right beyond chance at each rung, on the calibration split. This is what the fusion node receives, refined by whether the decision survives a re-save.</p><div id="trust" style="margin-top:8px"></div></div>
+  </div>
+</div></section>
+
+<section class="view" id="view-system"><div class="wrap">
+  <h2>What this demo is, and what it is not</h2>
+  <p class="lead">Everything above reads from the registry below. Nothing in the analysis path can change it.</p>
+  <div class="grid2" style="margin-top:18px">
+    <div class="panel pad"><h3>Scope of the demo</h3><div id="scope" style="margin-top:8px"></div></div>
+    <div class="panel pad"><h3>Frozen at R0</h3><p class="small">Thresholds and the edge threshold come from the calibration split at R0 and are never re-tuned per rung.</p><div id="frozen" style="margin-top:8px"></div></div>
+  </div>
+  <div class="grid2" style="margin-top:16px">
+    <div class="panel pad"><h3>Degradation ladder</h3><div id="ladcfg" style="margin-top:8px"></div></div>
+    <div class="panel pad"><h3>Data plane</h3><div id="dataplane" style="margin-top:8px"></div>
+      <h3 style="margin-top:18px">Lifecycle events and probe</h3><div id="evcfg" style="margin-top:8px"></div></div>
+  </div>
+</div></section>
+
+<script>
+const CLS={compression:'#D5741A',sensor:'#2B6CB3',synthesis:'#7650C4',scene:'#1B8686',temporal:'#2F8A55',encapsulation:'#596573',learned:'#B03A78'};
+const VC={fake:'#B8322A',real:'#1B7A58',inconclusive:'#8F6B0E'};
+let REF=null,RES=null,LAYER='fused',DEPM='rho';
+const $=s=>document.querySelector(s);
+const h=(t,a={},...kids)=>{const e=document.createElement(t);for(const k in a){if(k==='class')e.className=a[k];else if(k==='html')e.innerHTML=a[k];else if(k.startsWith('on'))e.addEventListener(k.slice(2),a[k]);else if(a[k]!==null&&a[k]!==undefined)e.setAttribute(k,a[k]);}
+  for(const c of kids.flat()){if(c===null||c===undefined)continue;e.append(c.nodeType?c:document.createTextNode(c));}return e;};
+const S=(t,a={},...kids)=>{const e=document.createElementNS('http://www.w3.org/2000/svg',t);for(const k in a)if(a[k]!==null&&a[k]!==undefined)e.setAttribute(k,a[k]);for(const c of kids.flat()){if(c===null||c===undefined)continue;e.append(c.nodeType?c:document.createTextNode(c));}return e;};
+const fx=(v,n=2)=>v===null||v===undefined?'n/a':Number(v).toFixed(n);
+const pct=v=>v===null||v===undefined?'n/a':Math.round(v*100)+'%';
+const cue=i=>REF.cues[i], ccol=i=>CLS[REF.cues[i].cls];
+const clear=e=>{while(e.firstChild)e.removeChild(e.firstChild);return e;};
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  document.querySelectorAll('section.view').forEach(v=>v.classList.toggle('on',v.id==='view-'+b.dataset.view));
+}));
+
+/* ---------- colour ---------- */
+function div(v){ // -1..1 -> blue / white / red
+  if(v===null||v===undefined||Number.isNaN(v))return null;
+  const t=Math.max(-1,Math.min(1,v)),a=Math.abs(t);
+  const c=t>=0?[184,50,42]:[43,108,179];
+  return `rgb(${Math.round(255+(c[0]-255)*a)},${Math.round(255+(c[1]-255)*a)},${Math.round(255+(c[2]-255)*a)})`;
+}
+function seq(v){ // 0..1 -> white to ink
+  if(v===null||v===undefined)return null;const a=Math.max(0,Math.min(1,v));
+  return `rgb(${Math.round(255-236*a)},${Math.round(255-223*a)},${Math.round(255-211*a)})`;
+}
+function hexrgb(x){return [parseInt(x.slice(1,3),16),parseInt(x.slice(3,5),16),parseInt(x.slice(5,7),16)];}
+
+/* ---------- maps ---------- */
+function mapCanvas(m,rgb,gamma=1){
+  const raw=atob(m.data),c=document.createElement('canvas');c.width=m.w;c.height=m.h;
+  const x=c.getContext('2d'),im=x.createImageData(m.w,m.h);
+  for(let i=0;i<raw.length;i++){const v=Math.pow(raw.charCodeAt(i)/255,gamma);
+    im.data[4*i]=rgb[0];im.data[4*i+1]=Math.round(rgb[1]*(1-0.55*v));im.data[4*i+2]=Math.round(rgb[2]*(1-v));im.data[4*i+3]=Math.round(235*v);}
+  x.putImageData(im,0,0);return c;
+}
+function drawOverlay(){
+  const img=$('#pv'),ov=$('#ov');ov.width=img.clientWidth;ov.height=img.clientHeight;
+  ov.style.width=img.clientWidth+'px';ov.style.height=img.clientHeight+'px';
+  const x=ov.getContext('2d');x.clearRect(0,0,ov.width,ov.height);
+  const rb=RES.region_box;
+  if(rb&&(rb[2]<0.98||rb[3]<0.98)){ // the pixel cues read only this part of a large frame
+    x.save();x.strokeStyle='rgba(255,255,255,.85)';x.setLineDash([6,4]);x.lineWidth=1.5;
+    x.strokeRect(rb[0]*ov.width+.5,rb[1]*ov.height+.5,rb[2]*ov.width-1,rb[3]*ov.height-1);
+    x.setLineDash([]);x.fillStyle='rgba(14,23,32,.75)';x.fillRect(rb[0]*ov.width+1,rb[1]*ov.height+1,148,18);
+    x.fillStyle='#fff';x.font='11px Archivo, sans-serif';x.fillText('pixel cues read this region',rb[0]*ov.width+6,rb[1]*ov.height+14);x.restore();}
+  let m=null,rgb=[255,170,40];
+  if(LAYER==='fused')m=RES.fused_map;
+  else if(LAYER==='truth'){m=RES.truth&&RES.truth.mask;rgb=[80,220,255];}
+  else if(LAYER!=='none'){const c=RES.cues.find(c=>c.id===LAYER);m=c&&c.map;}
+  if(!m)return;
+  x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';
+  x.globalAlpha=LAYER==='truth'?0.45:0.8;x.drawImage(mapCanvas(m,rgb,LAYER==='truth'?1:0.8),0,0,ov.width,ov.height);
+}
+function setLayer(l){LAYER=l;document.querySelectorAll('#layers .chip').forEach(c=>c.classList.toggle('on',c.dataset.l===l));drawOverlay();}
+window.addEventListener('resize',()=>{if(RES)drawOverlay();});
+
+/* ---------- generic charts ---------- */
+function lineChart(o){ // o: series[{color,values,dash,width,dots}], labels, ymin,ymax, hlines[{y,label,color}], w,h, yfmt
+  const W=o.w||560,H=o.h||230,L=38,R=12,T=10,B=26,n=o.labels.length;
+  const X=i=>L+(W-L-R)*i/(n-1),Y=v=>T+(H-T-B)*(1-(v-o.ymin)/(o.ymax-o.ymin));
+  const g=S('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',role:'img','aria-label':o.title||'chart'});
+  const ticks=o.ticks||[o.ymin,(o.ymin+o.ymax)/2,o.ymax];
+  ticks.forEach(t=>{g.append(S('line',{x1:L,x2:W-R,y1:Y(t),y2:Y(t),stroke:'#E6EAEF'}),S('text',{x:L-6,y:Y(t)+4,'text-anchor':'end','font-size':11},(o.yfmt||(v=>v.toFixed(2)))(t)));});
+  o.labels.forEach((l,i)=>g.append(S('text',{x:X(i),y:H-8,'text-anchor':'middle','font-size':11},l)));
+  (o.bands||[]).forEach(b=>g.append(S('rect',{x:L,width:W-L-R,y:Y(b.hi),height:Y(b.lo)-Y(b.hi),fill:b.color})));
+  (o.hlines||[]).forEach(hl=>{g.append(S('line',{x1:L,x2:W-R,y1:Y(hl.y),y2:Y(hl.y),stroke:hl.color||'#7C8A99','stroke-dasharray':'4 3'}));
+    if(hl.label)g.append(S('text',{x:W-R-2,y:Y(hl.y)-4,'text-anchor':'end','font-size':10.5},hl.label));});
+  o.series.forEach(s=>{
+    let d='',pen=false;
+    s.values.forEach((v,i)=>{if(v===null||v===undefined){pen=false;return;}d+=(pen?'L':'M')+X(i).toFixed(1)+' '+Y(Math.max(o.ymin,Math.min(o.ymax,v))).toFixed(1);pen=true;});
+    g.append(S('path',{d,fill:'none',stroke:s.color,'stroke-width':s.width||2,'stroke-dasharray':s.dash||null,'stroke-linejoin':'round'}));
+    if(s.err)s.values.forEach((v,i)=>{if(v===null)return;g.append(S('line',{x1:X(i),x2:X(i),y1:Y(v-s.err[i]),y2:Y(v+s.err[i]),stroke:s.color,'stroke-width':1.2}));});
+    if(s.dots)s.values.forEach((v,i)=>{if(v===null||v===undefined)return;const f=s.dots===true?true:s.dots[i];
+      g.append(S('circle',{cx:X(i),cy:Y(Math.max(o.ymin,Math.min(o.ymax,v))),r:3.4,fill:f?s.color:'#fff',stroke:s.color,'stroke-width':1.6}));});
+    if(s.mark!==undefined&&s.mark!==null&&s.values[s.mark]!==null)g.append(S('text',{x:X(s.mark),y:Y(s.values[s.mark])-8,'text-anchor':'middle','font-size':10.5,'font-weight':700,fill:s.color,style:`fill:${s.color}`},s.markLabel));
+  });
+  return g;
+}
+function heat(mat,labels,o={}){ // square matrix
+  const n=mat.length,c=o.cell||22,L=o.noLabels?2:26,T=o.noLabels?2:18,W=L+n*c+2,H=T+n*c+(o.caption?18:2);
+  const g=S('svg',{viewBox:`0 0 ${W} ${H}`,width:o.width||'100%',style:`max-width:${o.max||W*1.6}px`});
+  for(let i=0;i<n;i++){
+    if(!o.noLabels){g.append(S('text',{x:L-5,y:T+i*c+c/2+4,'text-anchor':'end','font-size':10},labels[i]));g.append(S('text',{x:L+i*c+c/2,y:T-5,'text-anchor':'middle','font-size':10},labels[i]));}
+    for(let j=0;j<n;j++){const v=mat[i][j],col=(o.color||div)(v);
+      const r=S('rect',{x:L+j*c,y:T+i*c,width:c-1,height:c-1,fill:col||'#F1F3F6'});
+      if(col===null){g.append(r,S('line',{x1:L+j*c+2,y1:T+i*c+c-3,x2:L+j*c+c-3,y2:T+i*c+2,stroke:'#C9D1DA'}));}
+      else{r.append(S('title',{},`${labels[i]} x ${labels[j]}: ${fx(v)}`));g.append(r);}}
+  }
+  if(o.caption)g.append(S('text',{x:L,y:H-4,'font-size':11,'font-weight':600},o.caption));
+  return g;
+}
+
+/* ---------- reference ---------- */
+async function loadRef(){
+  const r=await fetch('/api/reference');REF=await r.json();
+  $('#build').textContent=`config ${REF.config_hash}`;
+  renderMeasure();renderSystem();
+}
+
+/* ---------- analysis ---------- */
+async function run(fetcher){
+  $('#err').classList.remove('on');$('#result').classList.remove('on');$('#progress').classList.add('on');
+  $('#pbar').style.width='2%';$('#pmsg').textContent='Sending the file';
+  try{
+    const resp=await fetcher();
+    if(!resp.ok){throw new Error((await resp.text()).slice(0,200)||('Server returned '+resp.status));}
+    const rd=resp.body.getReader(),dec=new TextDecoder();let buf='';
+    for(;;){const {value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});
+      let i;while((i=buf.indexOf('\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line)continue;const ev=JSON.parse(line);
+        if(ev.type==='progress'){$('#pbar').style.width=ev.pct+'%';$('#pmsg').textContent=ev.msg;}
+        else if(ev.type==='error'){throw new Error(ev.msg);}
+        else if(ev.type==='result'){RES=ev.data;$('#progress').classList.remove('on');render();}}}
+  }catch(e){$('#progress').classList.remove('on');const el=$('#err');el.textContent=e.message||String(e);el.classList.add('on');}
+}
+function analyseFile(f){
+  run(()=>fetch('/api/analyze',{method:'POST',body:f,headers:{'X-Filename':encodeURIComponent(f.name),'Content-Type':'application/octet-stream'}}));}
+function analyseDemo(name){run(()=>fetch(`/api/analyze_demo?name=${encodeURIComponent(name)}`,{method:'POST'}));}
+async function openDemo(){
+  const dlg=$('#demo'),grid=clear($('#dgrid'));
+  dlg.showModal();
+  grid.append(h('p',{class:'small'},'Loading'));
+  try{
+    const r=await (await fetch('/api/demo')).json();clear(grid);
+    $('#demofolder').textContent=r.folder;
+    if(!r.images.length){grid.append(h('p',{class:'small'},'This folder has no images. Add JPEG or PNG files to it, or start the demo with --demo-dir pointing at another folder.'));return;}
+    r.images.forEach(im=>grid.append(h('button',{title:'Analyse '+im.name,onclick:()=>{dlg.close();analyseDemo(im.name);}},
+      h('img',{src:`/api/demo/${encodeURIComponent(im.name)}/thumb`,alt:im.name,loading:'lazy'}),
+      h('div',{class:'cap'},h('span',{},im.name.replace(/\.[^.]+$/,'')),im.label?h('span',{class:'tag '+im.label},im.label):''))));
+  }catch(e){clear(grid).append(h('p',{class:'small'},'Could not list the demo images: '+e.message));}
+}
+$('#demobtn').addEventListener('click',openDemo);
+$('#democlose').addEventListener('click',()=>$('#demo').close());
+$('#pick').addEventListener('click',()=>$('#file').click());
+$('#file').addEventListener('change',e=>{if(e.target.files[0])analyseFile(e.target.files[0]);e.target.value='';});
+const drop=$('#drop');
+['dragenter','dragover'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove('over');}));
+drop.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)analyseFile(f);});
+
+/* ---------- render result ---------- */
+function render(){
+  const R=RES,v=R.verdict;$('#result').classList.add('on');
+  // verdict
+  const pv=$('#pv');pv.onload=()=>drawOverlay();pv.src=R.preview;
+  const lay=clear($('#layers'));
+  const add=(l,t)=>lay.append(h('button',{class:'chip','data-l':l,onclick:()=>setLayer(l)},t));
+  if(R.fused_map)add('fused','Where: fused evidence');
+  R.cues.filter(c=>c.map).forEach(c=>add(c.id,c.id));
+  if(R.truth&&R.truth.mask)add('truth','Ground truth');
+  add('none','Image only');
+  LAYER=R.fused_map?'fused':'none';setLayer(LAYER);
+  const t=$('#vtitle');t.className='vtitle '+v.label;t.textContent=v.title;
+  $('#vsub').textContent=`Fused probability of manipulation ${fx(v.p)}, ${v.confidence_word} confidence`+(v.outside_envelope?', outside the calibrated envelope':'');
+  const m=clear($('#meter')),vr=REF.verdict_rule;
+  m.append(h('div',{class:'track'},h('i',{style:`width:${vr.real*100}%;background:#BFDDD0`}),h('i',{style:`width:${(vr.fake-vr.real)*100}%;background:#EAD9A6`}),h('i',{style:`width:${(1-vr.fake)*100}%;background:#EBC6C2`})),
+    h('div',{class:'needle',style:`left:${v.p*100}%`}),h('div',{class:'val num',style:`left:${Math.min(94,Math.max(6,v.p*100))}%`},fx(v.p)),
+    h('div',{class:'ticks'},h('span',{style:`left:${vr.real*50}%`},'no evidence'),h('span',{style:`left:${(vr.real+vr.fake)*50}%`},'inconclusive'),h('span',{style:`left:${(1+vr.fake)*50}%`},'manipulated')));
+  const er=clear($('#erasure'));
+  if(R.erasure){const E=R.erasure,pr=Math.round(E.p_right*100);
+    const cls=!E.reliable?'weak':E.found?'found':'clear';
+    const head=E.found?'Erased region found':'No erased region found';
+    const tail=!E.reliable?' C9 cannot be relied on for this file: the damage reading is uncertain or its decision changes under one re-save.'
+      :` C9 is right ${pr}% of the time in this situation, measured on held-out erasures at this level of damage.`+(E.found?' The map shows where.':' This answers the erasure question only; it does not vouch for the whole image.');
+    er.append(h('div',{class:'erase '+cls},h('b',{},'Erasure check (C9): '+head+'.'),h('span',{},tail)));}
+  const rs=clear($('#reasons'));v.reasons.forEach(x=>rs.append(h('li',{},x)));
+  const dc=clear($('#decisive'));
+  v.decisive.forEach(d=>{const i=REF.cues.findIndex(c=>c.id===d.id);
+    dc.append(h('div',{class:'dc'},h('span',{class:'dot',style:`background:${ccol(i)}`}),h('b',{},d.id),cue(i).short,h('span',{class:'num',style:`color:${d.contribution>0?VC.fake:VC.real}`},(d.contribution>0?'+':'')+fx(d.contribution))));});
+  if(v.decisive.length)dc.prepend(h('span',{class:'small',style:'align-self:center'},'Cues that decided it'));
+  const tr=clear($('#truth'));
+  if(R.user_label&&!R.truth){
+    const want=R.user_label==='edited'?'fake':'real';
+    const ok=v.label==='inconclusive'?null:v.label===want;
+    tr.append(h('div',{class:'truth '+(ok===true?'ok':ok===false?'no':'')},h('b',{},'File name says: '+R.user_label+'. '),
+      ok===true?'The verdict agrees.':ok===false?'The verdict disagrees.':'The system declined to decide, so it neither agrees nor disagrees.',
+      ' The file name is shown for comparison only; the analysis never reads it.'));}
+  if(R.truth){const T=R.truth,ok=T.correct;
+    tr.append(h('div',{class:'truth '+(ok===true?'ok':ok===false?'no':'')},h('b',{},'Ground truth for this sample: '),T.label+(T.rung!=='R0'?`, then taken to ${T.rung}`:'')+'. ',
+      ok===true?'The verdict is correct.':ok===false?'The verdict is wrong.':'The system declined to decide.',T.iou!==undefined&&T.iou!==null?` Localisation overlap with the true region: ${pct(T.iou)}.`:''));}
+  const f=R.file,fa=clear($('#facts'));
+  const fact=(k,val)=>fa.append(h('span',{},k+' ',h('b',{},val)));
+  fact('File',f.name);fact('Format',f.format+(f.declared_q?` Q${f.declared_q}${f.std_tables?'':' (custom tables)'}`:''));
+  fact('Size',`${f.width}x${f.height}, ${(f.bytes/1024).toFixed(0)} KB`);
+  if(!f.region.full)fact('Analysed region',`central ${f.region.w}x${f.region.h}`);
+  fact('Sensor reference',f.device?f.device:'none');
+  renderCues();renderLifecycle();renderFusion();
+  $('#timing').textContent=`${R.timing.states} file states analysed in ${R.timing.seconds} s. Config ${R.config}. File hash ${f.sha256}.`;
+  $('#result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderCues(){
+  const tb=clear($('#cues'));
+  tb.append(h('tr',{},...['Cue','Score against its threshold','Decision','Survives a re-save','Trust here','Pull on verdict','What it read','Map'].map(x=>h('th',{},x))));
+  RES.cues.forEach((c,i)=>{
+    const meta=cue(i),name=h('div',{class:'cname'},h('span',{class:'dot',style:`background:${ccol(i)}`}),h('b',{},c.id),h('div',{},meta.name,h('small',{},meta.cls)));
+    if(c.status==='masked'){tb.append(h('tr',{class:'masked'},h('td',{},name),h('td',{colspan:7},c.reason)));return;}
+    const mg=Math.max(-2.6,Math.min(4,c.margin)),w=Math.abs(mg)/6.6*100;
+    const bar=h('div',{class:'mbar',title:`score ${fx(c.score)}, threshold ${fx(c.tau)}`},h('div',{class:'axis'}),
+      h('div',{class:'fill',style:`left:${mg>=0?40:40-w}%;width:${w}%;background:${mg>=0?ccol(i):'#B7C1CC'}`}),h('div',{class:'tau'}));
+    let mapcell='';
+    if(c.map){const cv=mapCanvas(c.map,[255,170,40],0.8);mapcell=h('button',{class:'mapbtn',title:'Show this map on the image',onclick:()=>{setLayer(c.id);$('#pv').scrollIntoView({behavior:'smooth',block:'center'});}},cv);}
+    tb.append(h('tr',{},h('td',{},name),h('td',{},bar,h('span',{class:'tiny num'},`${fx(c.score)} vs ${fx(c.tau)}`)),
+      h('td',{},h('span',{class:'pill '+(c.fired?'hit':'miss')},c.fired?'fired':'quiet'),c.fired&&c.survives?h('div',{class:'tiny'},'lasts to '+c.survives):''),
+      h('td',{},c.persists?'yes':'no'),
+      h('td',{},h('span',{class:'tbar'},h('i',{style:`width:${c.trust*100}%`})),h('span',{class:'num small'},fx(c.trust))),
+      h('td',{class:'num',style:`color:${c.contribution>0.05?VC.fake:c.contribution<-0.05?VC.real:'inherit'};font-weight:600`},(c.contribution>0?'+':'')+fx(c.contribution)),
+      h('td',{},h('div',{class:'detail'},c.details.join('. '))),h('td',{},mapcell)));
+  });
+}
+function renderLifecycle(){
+  const R=RES,L=R.ladder,ld=clear($('#ladder'));
+  L.forEach((s,i)=>ld.append(h('div',{class:'rung'+(i===0?' here':''),title:s.label+`. ${s.size}, ${(s.bytes/1024).toFixed(0)} KB. Looks like ${s.looks_like} to the damage estimator.`},
+    h('img',{src:s.thumb,alt:s.rung}),h('div',{},h('b',{},i===0?'Input':s.rung),h('span',{class:'lab',style:`background:${VC[s.verdict]}`}),h('br'),i===0?'as received':s.short))));
+  const vr=REF.verdict_rule;
+  clear($('#ladderchart')).append(lineChart({w:1160,h:150,labels:L.map((s,i)=>i===0?'input':'+'+s.rung),ymin:0,ymax:1,ticks:[0,.5,1],
+    bands:[{lo:vr.fake,hi:1,color:'#FBEDEB'},{lo:0,hi:vr.real,color:'#E8F4EF'}],
+    series:[{color:'#13202C',width:2.4,values:L.map(s=>s.p.A1),dots:true}]}));
+  // per-cue small multiples
+  const mi=clear($('#minis'));
+  R.cues.forEach((c,i)=>{ if(c.status==='masked')return;
+    const vals=L.map(s=>s.margins[i]),fired=L.map(s=>s.fired[i]);
+    const lo=Math.min(-2,...vals.filter(v=>v!==null)),hi=Math.max(3,...vals.filter(v=>v!==null));
+    const oe=R.lifecycle.order_effect[i],nf=R.lifecycle.states.filter(s=>s.fired[i]).length;
+    mi.append(h('div',{class:'mini'},h('h4',{},h('span',{class:'dot',style:`background:${ccol(i)}`}),c.id+' '+cue(i).short),
+      lineChart({w:230,h:104,labels:L.map((s,j)=>j%2===0?(j===0?'in':s.rung):''),ymin:Math.max(-4,lo),ymax:Math.min(9,hi),ticks:[0],yfmt:()=>'thr',
+        hlines:[{y:0,color:'#13202C'}],series:[{color:ccol(i),values:vals,dots:fired}]}),
+      h('p',{},`Above threshold after ${nf} of ${R.lifecycle.n_states} histories`+(oe!==null?`. Order of events explains ${pct(oe)} of the spread`:'')+'.')));
+  });
+  // history matrix
+  const st=R.lifecycle.states,act=R.cues.map((c,i)=>c.status==='active'?i:-1).filter(i=>i>=0);
+  const evl=Object.fromEntries(R.lifecycle.events.map(e=>[e.id,e.label]));
+  const cw=13,chh=18,Lm=30;let x=Lm;const xs=[];let prev=1;
+  st.forEach(s=>{if(s.path.length!==prev){x+=8;prev=s.path.length;}xs.push(x);x+=cw;});
+  const g=S('svg',{viewBox:`0 0 ${x+4} ${act.length*chh+34}`,width:x+4,style:'min-width:'+(x+4)+'px'});
+  act.forEach((ci,r)=>{g.append(S('text',{x:Lm-6,y:r*chh+chh/2+4,'text-anchor':'end','font-size':10.5,'font-weight':700},REF.cues[ci].id));
+    st.forEach((s,j)=>{const rc=S('rect',{x:xs[j],y:r*chh,width:cw-1,height:chh-2,fill:s.fired[ci]?ccol(ci):'#E9EDF1'});
+      rc.append(S('title',{},`${s.path.map(p=>evl[p]).join(', then ')}: ${REF.cues[ci].id} ${s.fired[ci]?'above':'below'} threshold (${fx(s.margins[ci],1)})`));g.append(rc);});});
+  let d=0;st.forEach((s,j)=>{if(s.path.length!==d){d=s.path.length;g.append(S('text',{x:xs[j],y:act.length*chh+14,'font-size':10.5},d+(d===1?' event':' events')));}});
+  g.append(S('text',{x:Lm,y:act.length*chh+29,'font-size':10.5},'Events: '+R.lifecycle.events.map(e=>e.label).join(', ')+', in every order'));
+  clear($('#hist')).append(g);
+  $('#histtitle').textContent=`${R.lifecycle.n_states} possible histories of this file`;
+  // relationships
+  const ids=REF.cues.map(c=>c.id),rel=R.relationship;
+  clear($('#hm1')).append(heat(rel.comove,ids,{caption:'This file'}));
+  clear($('#hm2')).append(heat(rel.reference,ids,{caption:'Reference set at '+rel.reference_rung}));
+  const pairs=[];for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){const v=rel.comove[i][j];if(v!==null&&v>0.6)pairs.push(`${ids[i]} and ${ids[j]}`);}
+  $('#reltext').textContent=`Left: rank correlation of this file's cue scores across all ${1+8+R.lifecycle.n_states} states. Right: how often cues fail on the same files in the reference set at the estimated damage level. `+(pairs.length?`On this file ${pairs.slice(0,4).join(', ')} move together.`:'On this file no pair of cues moves strongly together.');
+}
+function renderFusion(){
+  const R=RES,d=R.damage,pm=Math.max(...d.posterior);
+  const W=300,H=130,g=S('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%'});
+  d.posterior.forEach((p,i)=>{const bw=W/9,bh=(H-34)*p/Math.max(pm,0.01),hit=REF.ladder[i].id===d.rung;
+    g.append(S('rect',{x:i*bw+4,y:H-22-bh,width:bw-8,height:Math.max(1,bh),fill:hit?'#13202C':'#B7C1CC'}),
+      S('text',{x:i*bw+bw/2,y:H-8,'text-anchor':'middle','font-size':11,'font-weight':hit?700:400},REF.ladder[i].id));
+    if(p>0.08)g.append(S('text',{x:i*bw+bw/2,y:H-26-bh,'text-anchor':'middle','font-size':10},pct(p)));});
+  clear($('#dmg')).append(g);
+  const li=REF.ladder.findIndex(l=>l.id===d.rung);
+  $('#dmgtext').textContent=`It looks most like ${d.rung}: ${REF.ladder[li].label}.`+(d.envelope>1.5?' Its damage profile is unlike anything in the reference set, so this estimate is weak.':'');
+  const kv=clear($('#dmgkv')),f=R.file,ft=d.features;
+  const row=(k,v)=>kv.append(h('dt',{},k),h('dd',{},v));
+  row('Declared quality',f.declared_q?`Q${f.declared_q}, ${f.std_tables?'standard':'custom'} tables, ${f.chroma||''}`:'lossless container');
+  row('Compression history',ft.prior_lattice>0.05?'an earlier quantisation is still visible':'no earlier quantisation visible');
+  row('Metadata',Object.keys(f.exif).length?Object.entries(f.exif).slice(0,3).map(([k,v])=>`${k} ${v}`).join('; '):(f.text_keys.length?'text chunks: '+f.text_keys.join(', '):'none in the container'));
+  row('Sensor reference',f.device_note+(f.pce!==null&&f.device?`, PCE ${f.pce}`:''));
+  row('Envelope',d.envelope<=1?'inside the calibrated range':d.envelope<=1.5?'at the edge of the calibrated range':'outside the calibrated range');
+  // graph
+  const G=S('svg',{viewBox:'0 0 280 250',width:'100%',style:'max-width:320px;margin:6px auto 0'}),cx=140,cy=122,rad=88;
+  const pos=REF.cues.map((c,i)=>{const a=-Math.PI/2+i*2*Math.PI/REF.cues.length;return [cx+rad*Math.cos(a),cy+rad*Math.sin(a)];});
+  R.relationship.edges.forEach(([i,j,w])=>G.append(S('line',{x1:pos[i][0],y1:pos[i][1],x2:pos[j][0],y2:pos[j][1],stroke:'#13202C','stroke-width':1+5*w,'stroke-opacity':0.25+0.6*w,'stroke-linecap':'round'},S('title',{},`${REF.cues[i].id} and ${REF.cues[j].id} fail together, weight ${fx(w)}`))));
+  R.cues.forEach((c,i)=>{const [x,y]=pos[i],act=c.status==='active',r=act?7+10*c.trust:7;
+    if(act&&c.fired)G.append(S('circle',{cx:x,cy:y,r:r+4,fill:'none',stroke:VC.fake,'stroke-width':2}));
+    G.append(S('circle',{cx:x,cy:y,r,fill:act?ccol(i):'#fff',stroke:act?ccol(i):'#B7C1CC','stroke-dasharray':act?null:'3 2','fill-opacity':act?0.9:1},S('title',{},act?`${c.id}: trust ${fx(c.trust)}, ${c.fired?'fired':'quiet'}`:`${c.id}: masked`)));
+    const a=-Math.PI/2+i*2*Math.PI/REF.cues.length;G.append(S('text',{x:cx+(rad+30)*Math.cos(a),y:cy+(rad+30)*Math.sin(a)+4,'text-anchor':'middle','font-size':11.5,'font-weight':700},c.id));});
+  if(!R.relationship.edges.length)G.append(S('text',{x:cx,y:cy+4,'text-anchor':'middle','font-size':11},'no links at this damage level'));
+  clear($('#graph')).append(G);
+  // arms
+  const ar=clear($('#arms'));
+  [['A1','Dependence graph (ours)'],['A2','Fully connected'],['A3','Independent cues']].forEach(([k,nm],i)=>{const p=R.fusion[k];
+    ar.append(h('div',{style:'margin-bottom:12px'},h('div',{style:'display:flex;justify-content:space-between;font-size:.88rem'},h('span',{style:i===0?'font-weight:700':''},nm),h('span',{class:'num',style:'font-weight:700'},fx(p))),
+      h('div',{style:'height:10px;background:#E6EAEF;border-radius:2px;margin-top:4px;position:relative'},h('i',{style:`display:block;height:100%;width:${p*100}%;border-radius:2px;background:${i===0?'#13202C':'#8C99A6'}`}))));});
+  $('#armnote').textContent=`Total trust across cues: ${fx(R.fusion.trust_sum)}. Seeds disagree by ${fx(R.fusion.spread,3)}. On the reference set the three arms are measured to be almost equal; see Measurements.`;
+}
+
+/* ---------- measurements ---------- */
+function renderMeasure(){
+  const R=REF,rl=R.ladder.map(l=>l.id),c=R.corpus;
+  $('#mlead').textContent=`${c.n} files (${c.n_real} authentic, ${c.n_fake} manipulated or synthetic) from ${c.scenes} scenes, each taken to all nine rungs. Thresholds come from the calibration split, fusion weights from the training split, and every number below from the ${c.splits.test} held-out test files.`;
+  $('#mnote').innerHTML=`<b>Read these as a toy result.</b> The cameras, their sensor fingerprints and the manipulations are simulated on 24 lossless Kodak photographs, and R8 is a platform emulator, not a real upload. The numbers show that the measurement pipeline runs end to end. They are not evidence about real phones, real editors or real generators. Built ${R.built_at}, config ${R.config_hash}.`;
+  const live=R.cues.map((q,i)=>i).filter(i=>R.survival.auc[i].some(v=>v!==null));
+  clear($('#surv')).append(lineChart({labels:rl,ymin:0.4,ymax:1,ticks:[0.5,0.6,0.8,1],hlines:[{y:R.floor,label:'floor '+R.floor}],
+    series:live.map(i=>({color:ccol(i),values:R.survival.auc[i],dash:[1,2].includes(i)?(i===1?'6 3':'2 3'):null,
+      mark:R.survival.rstar[i]!==null&&R.survival.rstar[i]<9?R.survival.rstar[i]:null,markLabel:'R*'}))}));
+  const sl=clear($('#survleg'));live.forEach(i=>{const rs=R.survival.rstar[i];sl.append(h('span',{},h('i',{style:`background:${ccol(i)}`}),`${R.cues[i].id} ${R.cues[i].short}, R* ${rs===9?'never':rl[rs]} (predicted: ${R.cues[i].breaks})`));});
+  const F=R.fusion;
+  clear($('#fus')).append(lineChart({labels:rl,ymin:0.4,ymax:1,ticks:[0.5,0.6,0.8,1],series:[
+    {color:'#B7C1CC',values:F.best_single,dash:'2 3'},{color:'#2B6CB3',values:F.pixel_only,dash:'6 3'},
+    {color:'#8F6B0E',values:F.arms.A3.auc},{color:'#7650C4',values:F.arms.A2.auc},{color:'#13202C',values:F.arms.A1.auc,width:2.6,dots:true}]}));
+  $('#fusleg').innerHTML='';[['#13202C','Dependence graph (ours)'],['#7650C4','Fully connected'],['#8F6B0E','Independent cues'],['#2B6CB3','Ours without the container cue'],['#B7C1CC','Best single cue']].forEach(([cl,n])=>$('#fusleg').append(h('span',{},h('i',{style:`background:${cl}`}),n)));
+  renderDep();
+  document.querySelectorAll('#depseg button').forEach(b=>b.onclick=()=>{DEPM=b.dataset.m;document.querySelectorAll('#depseg button').forEach(x=>x.classList.toggle('on',x===b));renderDep();});
+  const mx=Math.max(0.03,...F.gap_fc.mean.map(Math.abs),...F.gap_ind.mean.map(Math.abs))*1.6;
+  clear($('#gap')).append(lineChart({h:180,labels:rl,ymin:-mx,ymax:mx,ticks:[-mx,0,mx],yfmt:v=>(v>0?'+':'')+v.toFixed(3),hlines:[{y:0,color:'#13202C'}],
+    series:[{color:'#7650C4',values:F.gap_fc.mean,err:F.gap_fc.std,dots:true},{color:'#8F6B0E',values:F.gap_ind.mean,err:F.gap_ind.std,dots:true}]}));
+  $('#gapleg').innerHTML='';[['#7650C4','AUC gap: ours minus fully connected'],['#8F6B0E','AUC gap: ours minus independent']].forEach(([cl,n])=>$('#gapleg').append(h('span',{},h('i',{style:`background:${cl}`}),n)));
+  const em=Math.max(0.12,...F.arms.A1.ece,...F.arms.A2.ece,...F.arms.A3.ece)*1.15;
+  clear($('#ece')).append(lineChart({h:170,labels:rl,ymin:0,ymax:em,ticks:[0,em/2,em],series:[{color:'#8F6B0E',values:F.arms.A3.ece},{color:'#7650C4',values:F.arms.A2.ece},{color:'#13202C',values:F.arms.A1.ece,width:2.6,dots:true}]}));
+  $('#eceleg').innerHTML='';$('#eceleg').append(h('span',{},'Expected calibration error per rung, same colours as above'));
+  // hypotheses
+  const H=R.hypotheses,hy=clear($('#hyps')),ids=R.cues.map(q=>q.id);
+  const add=(k,ok,head,body)=>hy.append(h('div',{class:'hyp '+(ok?'yes':'no')},h('div',{},h('b',{},k),head,' ',h('span',{class:'pill '+(ok?'':'miss'),style:ok?'background:var(--real-bg);color:var(--real)':''},ok?'supported here':'not supported here')),h('p',{class:'small',style:'margin-top:3px'},body)));
+  add('H1',H.H1.supported,'Cues break at different rungs and their ranking changes.',`R* per cue: ${ids.map((id,i)=>H.H1.rstar[i]?id+' '+H.H1.rstar[i]:null).filter(Boolean).join(', ')}. The top three cues change at ${H.H1.rungs_where_top3_changes.join(', ')||'no rung'}.`);
+  add('H2',H.H2.supported,'The compression cues C1 to C3 fail together.',`Mean error correlation inside the C1 to C3 block is ${fx(H.H2.block_rho[0])} at R0 against ${fx(H.H2.other_rho[0])} for all other pairs. It stays above the independence threshold ${fx(R.dependence.theta)} at ${H.H2.rungs_block_above_theta.join(', ')||'no rung'}. Chance of a block this tight under independence: ${H.H2.p_block_at_r0<0.0025?'below 1 in 400':fx(H.H2.p_block_at_r0,3)}.`);
+  add('H3',H.H3.supported,'A graph built from measured dependence beats the other two under heavy damage.',`Mean AUC gap on R5 to R8: ${fx(H.H3.heavy_gap_fc[0],3)} against fully connected and ${fx(H.H3.heavy_gap_ind[0],3)} against independent cues (seed spread ${fx(H.H3.heavy_gap_ind[1],3)}). On R0 and R1 the gaps are ${fx(H.H3.light_gap_fc[0],3)} and ${fx(H.H3.light_gap_ind[0],3)}. The report pre-registered this outcome as publishable: it agrees with the ensemble literature that diversity structure is a poor predictor of accuracy.`);
+  const ng=clear($('#negs'));R.negatives.forEach(n=>{const val=Array.isArray(n.value)?(n.value.length?n.value.join(', '):'none'):n.value;ng.append(h('div',{class:'small',style:'padding:5px 0;border-bottom:1px solid var(--rule2)'},n.title+': ',h('b',{style:'color:var(--ink)'},String(val))));});
+  // hub + trust
+  $('#hubtext').textContent=`Picks the right rung for ${pct(R.hub.accuracy)} of held-out file states, and is within one rung for ${pct(R.hub.within1)}. Rows are the true rung, columns the estimate.`;
+  clear($('#hub')).append(heat(R.hub.confusion,rl,{color:seq,cell:24,max:330}));
+  const tw=30,th=22,tg=S('svg',{viewBox:`0 0 ${40+9*tw} ${20+REF.cues.length*th}`,width:'100%',style:'max-width:380px'});
+  rl.forEach((l,j)=>tg.append(S('text',{x:40+j*tw+tw/2,y:13,'text-anchor':'middle','font-size':10},l)));
+  R.trust.forEach((row,i)=>{tg.append(S('text',{x:34,y:20+i*th+th/2+4,'text-anchor':'end','font-size':10.5,'font-weight':700},ids[i]));
+    row.forEach((v,j)=>{const masked=R.survival.auc[i].every(x=>x===null);const rc=S('rect',{x:40+j*tw,y:20+i*th,width:tw-1,height:th-1,fill:masked?'#F1F3F6':seq(v)});rc.append(S('title',{},`${ids[i]} at ${rl[j]}: ${fx(v)}`));tg.append(rc);
+      if(!masked&&v>0.15)tg.append(S('text',{x:40+j*tw+tw/2,y:20+i*th+th/2+4,'text-anchor':'middle','font-size':9.5,style:`fill:${v>0.5?'#fff':'#48586A'}`},fx(v,1).replace('0.','.')));});});
+  clear($('#trust')).append(tg);
+}
+function renderDep(){
+  const R=REF,ids=R.cues.map(q=>q.id),box=clear($('#dep')),row=h('div',{style:'display:grid;grid-template-columns:repeat(9,minmax(112px,1fr));gap:8px;min-width:1040px'});
+  const col=DEPM==='Dis'?(v=>v===null?null:seq(v*2)):div;
+  R.dependence[DEPM].forEach((m,r)=>{const ed=R.dependence.edges[r].length;
+    row.append(h('div',{},heat(m,ids,{noLabels:true,cell:13,color:col,max:150}),h('div',{class:'tiny',style:'margin-top:4px'},h('b',{style:'color:var(--ink)'},R.ladder[r].id),` ${ed} link${ed===1?'':'s'}`)));});
+  box.append(row,h('p',{class:'tiny',style:'margin-top:8px'},`Cue order in every matrix: ${ids.join(', ')}. Hatched cells are C7, masked for images. A link is drawn where error correlation on the calibration split exceeds ${fx(R.dependence.theta)}, the 95th percentile of the independence null at R0.`));
+}
+
+/* ---------- system ---------- */
+function renderSystem(){
+  const R=REF,ids=R.cues.map(q=>q.id);
+  const sc=clear($('#scope'));
+  [['Images only','Video is not implemented. C7, the temporal cue, is masked on every file, exactly as the architecture masks it for images.'],
+   ['Simulated core set','Four simulated cameras with their own sensor fingerprint, JPEG tables and EXIF identity stand in for the team phones. Flat-field frames, captures and manipulations follow the planned protocol. One authentic web copy per scene (resized, re-encoded, no metadata, no camera record) is included so that a missing fingerprint or a resize is not learned as proof of forgery.'],
+   ['Conservative thresholds','Each cue\'s threshold is the most informative one that flags at most 10% of authentic files at R0.'],
+   ['R8 is emulated','The project specifies a real upload and re-download. Here R8 is a resize, a strip and two platform-style re-encodes.'],
+   ['C4 needs a registered camera','The sensor cue runs only when the file claims, or blindly matches, one of the four registered fingerprints. On any other upload it is masked.'],
+   ['C5 reads resampling, not generators','It detects content that was produced on a coarser grid and interpolated. It will miss generators that leave no such trace, and integer 2x stages hide on the JPEG lattice.'],
+   ['C6 carries no signal here','The classical illuminant cue sits at chance from R0. The report already notes this cue needs a learned estimator.'],
+   ['C9 is a trained network','A ResNet-34 detector trained on about 3,500 COCO photos with one object erased by LaMa, each pair passed through the same lossy, metadata-stripping share step. It reads the whole frame at 1024 px. Phone erasers (Apple Clean Up, Google Magic Eraser, Samsung Object Eraser) use their own models, so how well it transfers to them is measured on the demo photos, which were never used in training.'],
+   ['No public datasets, no DeepfakeBench','FF++, Celeb-DF, DFDC, Columbia, CASIA, VISION and Omni-Fake are not loaded, so there is no cross-dataset or out-of-distribution number.'],
+   ['Verdicts on your own uploads','Thresholds, trust and fusion were fitted on the simulated set. On real-world files treat the output as a walkthrough of the method, not as a finding.']
+  ].forEach(([a,b])=>sc.append(h('div',{style:'padding:7px 0;border-bottom:1px solid var(--rule2)'},h('b',{},a),h('div',{class:'small'},b))));
+  const fr=clear($('#frozen')),tb=h('table',{class:'plain'},h('tr',{},h('th',{},'Cue'),h('th',{},'Threshold'),h('th',{},'Origin class'),h('th',{},'Reads')));
+  R.cues.forEach((q,i)=>tb.append(h('tr',{},h('td',{},h('b',{},q.id),' '+q.short),h('td',{class:'num'},R.thresholds[i]===null?'masked':fx(R.thresholds[i])),h('td',{},h('span',{class:'dot',style:`display:inline-block;margin-right:6px;background:${CLS[q.cls]}`}),q.cls),h('td',{class:'small'},q.reads))));
+  fr.append(tb,h('dl',{class:'kv',style:'margin-top:12px'},h('dt',{},'Edge threshold'),h('dd',{class:'num'},fx(R.dependence.theta,3)+' on error correlation'),h('dt',{},'Survivability floor'),h('dd',{class:'num'},'AUC '+R.floor),
+    h('dt',{},'Verdict bounds'),h('dd',{class:'num'},`manipulated at ${R.verdict_rule.fake} and above, no evidence at ${R.verdict_rule.real} and below with total trust of at least ${R.verdict_rule.min_trust}`),
+    h('dt',{},'Seeds'),h('dd',{class:'num'},`${R.registry.seed} for ladder and splits; ${R.registry.fusion_seeds.join(', ')} for the fusion arms`),h('dt',{},'Config hash'),h('dd',{class:'num'},R.config_hash)));
+  const fmt=ops=>ops.length?ops.map(([n,p])=>n==='jpeg'?`JPEG ${p.q}${p.progressive?' progressive':''}`:n==='resize'?`resize ${p.scale}x`:n==='shift'?`shift grid ${p.dx},${p.dy}`:n==='crop'?'crop edges':n==='strip'?'strip metadata':n).join(', then '):'file as it is';
+  const lt=h('table',{class:'plain'},h('tr',{},h('th',{},'Rung'),h('th',{},'Image chain'),h('th',{},'Exact operations')));
+  R.registry.ladder.forEach(l=>lt.append(h('tr',{},h('td',{},h('b',{},l.id)),h('td',{},l.label),h('td',{class:'small'},fmt(l.ops)))));
+  clear($('#ladcfg')).append(lt);
+  const c=R.corpus,dp=clear($('#dataplane'));
+  dp.append(h('dl',{class:'kv'},h('dt',{},'Source scenes'),h('dd',{},'Kodak lossless suite, 24 photographs, two 512x512 crops each'),
+    h('dt',{},'Devices'),h('dd',{},R.devices.map(d=>`${d.id} ${d.make} ${d.model} (Q${d.q})`).join('; ')),
+    h('dt',{},'Samples'),h('dd',{},Object.entries(c.families).map(([k,v])=>`${v} ${k.replace('_',' ')}`).join(', ')),
+    h('dt',{},'Splits'),h('dd',{},`${c.splits.train} train, ${c.splits.calib} calibration, ${c.splits.test} test, split by source photograph`),
+    h('dt',{},'Record'),h('dd',{},'id, modality, label, family, device, split, R0 hash')));
+  const et=h('table',{class:'plain'},h('tr',{},h('th',{},'Event'),h('th',{},'Operations')));
+  R.registry.events.forEach(e=>et.append(h('tr',{},h('td',{},h('b',{},e.label)),h('td',{class:'small'},fmt(e.ops)))));
+  et.append(h('tr',{},h('td',{},h('b',{},'Stability probe')),h('td',{class:'small'},fmt(R.registry.probe.ops)+'. Applied to every state to test whether a cue\'s decision survives.')));
+  clear($('#evcfg')).append(et,h('p',{class:'tiny',style:'margin-top:8px'},`Every ordering of the four events up to ${R.registry.lifecycle_depth} deep: 4 + 12 + 24 = 40 histories per file.`));
+}
+loadRef().catch(e=>{const el=$('#err');el.textContent='Could not load the reference: '+e.message;el.classList.add('on');});
+</script>
+</body>
+</html>

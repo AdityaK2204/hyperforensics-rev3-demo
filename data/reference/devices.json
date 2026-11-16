@@ -1,0 +1,30 @@
+[
+ {
+  "id": "D1",
+  "make": "HyperCam",
+  "model": "HC-A1",
+  "serial": "HCA1-000417",
+  "q": 90
+ },
+ {
+  "id": "D2",
+  "make": "HyperCam",
+  "model": "HC-B2",
+  "serial": "HCB2-001903",
+  "q": 86
+ },
+ {
+  "id": "D3",
+  "make": "Nordlys",
+  "model": "N7 Pro",
+  "serial": "N7P-58210",
+  "q": 93
+ },
+ {
+  "id": "D4",
+  "make": "Kestrel",
+  "model": "K-5",
+  "serial": "K5-220764",
+  "q": 88
+ }
+]
